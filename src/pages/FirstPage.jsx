@@ -1,19 +1,30 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/authContext"; // assuming you have auth context
+import { useNavigate } from "react-router-dom";
 import Dashboard from "./DashBoard";
 import ProfileView from "./User";
 import { LayoutDashboard } from "lucide-react";
 
 export default function Layout() {
-  const [activeTab, setActiveTab] = useState("dashboard"); // default tab
+  const navigate = useNavigate();
+
   const user = JSON.parse(localStorage.getItem("userData"));
 
-  // user object from localStorage
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [userPhoto, setUserPhoto] = useState("");
 
+  // Redirect if no user found
   useEffect(() => {
-    if (user.user.profile_photo) setUserPhoto(user.user.profile_photo);
-  }, [user]);
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (user.user?.profile_photo) {
+      setUserPhoto(user.user.profile_photo);
+    }
+  }, []);
+
+  // Stop rendering until redirect done
+  if (!user) return null;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -23,7 +34,6 @@ export default function Layout() {
           {activeTab === "dashboard" ? "Dashboard" : "Profile"}
         </h1>
 
-        {/* Right Buttons */}
         <div className="flex items-center gap-4">
           {/* Dashboard Button */}
           <button
@@ -37,10 +47,10 @@ export default function Layout() {
             <LayoutDashboard className="w-5 h-5" />
           </button>
 
-          {/* Profile Avatar Button */}
+          {/* Profile Avatar */}
           <button
             onClick={() => setActiveTab("profile")}
-            className={`w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md relative group focus:outline-none transition-all ${
+            className={`w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md relative group transition-all ${
               activeTab === "profile" ? "ring-2 ring-indigo-400" : ""
             }`}
           >
@@ -56,7 +66,6 @@ export default function Layout() {
               </span>
             )}
 
-            {/* Tooltip */}
             <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all">
               Profile
             </span>
