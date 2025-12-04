@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import ThemeToggle from "../components/themeToggle";
+import ThemeToggle from "../components/ThemeToggle";
 import { Mail, Lock } from "lucide-react"; // Icons
 
 export default function Login() {

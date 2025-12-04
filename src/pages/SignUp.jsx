@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import ProfilePhotoUploader from "../components/ProfilePhotoUploader";
-import ThemeToggle from "../components/themeToggle";
+import ThemeToggle from "../components/ThemeToggle";
 import { Camera, User, Mail, Lock } from "lucide-react";
 
 export default function Signup() {
