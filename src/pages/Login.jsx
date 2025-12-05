@@ -8,6 +8,8 @@ export default function Login() {
   const { login, loading, darkMode } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -84,16 +86,23 @@ export default function Login() {
           </div>
 
           {/* Password */}
+          {/* Password */}
           <div className="relative">
             <Lock className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className={inputClass}
               required
             />
+            <span
+              className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </span>
           </div>
 
           {/* Button */}
