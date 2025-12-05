@@ -29,7 +29,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* HEADER */}
-      <header className="bg-[#1B2A5A] text-white px-8 py-4 flex justify-between items-center">
+      <header className="bg-[#1B2A5A] text-white px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <h1 className="text-2xl font-bold">
           {activeTab === "dashboard" ? "Dashboard" : "Profile"}
         </h1>
@@ -74,7 +74,7 @@ export default function Layout() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 overflow-auto bg-gray-100">
+      <main className="flex-1 overflow-auto bg-gray-100 ">
         {activeTab === "dashboard" && <Dashboard />}
         {activeTab === "profile" && <ProfileView />}
       </main>
