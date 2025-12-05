@@ -10,22 +10,90 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const apiUrl = API_URL;
+
+  // ----------------------------
+  // VALIDATION FUNCTIONS
+  // ----------------------------
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validatePhone = (num) => {
+    return /^[0-9]{10}$/.test(num);
+  };
+
+  // ----------------------------
+  // AUTO LOCATION USING BROWSER
+  // ----------------------------
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported in this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        try {
+          // Reverse geocoding using OpenStreetMap (FREE, no API key)
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await response.json();
+
+          const city =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            "";
+          const country = data.address.country || "";
+
+          setLocation(`${city}, ${country}`);
+        } catch (err) {
+          console.error(err);
+          alert("Could not fetch location!");
+        }
+      },
+      (err) => {
+        console.error(err);
+        alert("Permission denied or error fetching location.");
+      }
+    );
+  };
+
+  // ----------------------------
+  // SUBMIT FUNCTION
+  // ----------------------------
   const handleSubmit = async () => {
     if (!name || !email) {
       alert("Name and Email are required!");
       return;
     }
 
+    if (!validateEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      alert("Phone number must be exactly 10 digits.");
+      return;
+    }
+
     const payload = {
-      user: token, // or your user ID
+      user: token,
       personal: { name, email, designation, location, phone },
     };
 
     setLoading(true);
+
     try {
       const res = await axios.post(`${apiUrl}profile/`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       alert("Profile created successfully!");
       onProfileCreated(res.data.profile_id);
       onClose();
@@ -46,6 +114,7 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
         >
           ✕
         </button>
+
         <h2 className="text-3xl font-bold text-indigo-600 mb-6 text-center">
           Create New Profile
         </h2>
@@ -69,17 +138,34 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
             onChange={setDesignation}
             placeholder="Software Engineer"
           />
-          <InputField
-            label="Location"
-            value={location}
-            onChange={setLocation}
-            placeholder="City, Country"
-          />
+
+          {/* LOCATION + BUTTON */}
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1">
+              Location
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="w-full p-2 rounded-xl border border-gray-300"
+                value={location}
+                placeholder="City, Country"
+                onChange={(e) => setLocation(e.target.value)}
+              />
+              <button
+                onClick={fetchLocation}
+                className="px-3 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600"
+              >
+                📍
+              </button>
+            </div>
+          </div>
+
           <InputField
             label="Phone"
             value={phone}
             onChange={setPhone}
-            placeholder="+91 1234567890"
+            placeholder="10-digit number"
           />
         </div>
 
@@ -95,7 +181,7 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
   );
 }
 
-// Simple reusable input field
+// Input Field Component
 function InputField({ label, value, onChange, placeholder }) {
   return (
     <div>

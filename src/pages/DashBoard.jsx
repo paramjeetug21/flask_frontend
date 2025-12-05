@@ -32,7 +32,7 @@ export default function Dashboard() {
     async function loadProfiles() {
       try {
         const res = await fetchDashboard(token);
-
+        console.log("Dashboard fetch response:", res);
         setProfiles(res.data);
       } catch (err) {
         console.error("Profile fetch error:", err);
@@ -324,6 +324,7 @@ export default function Dashboard() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-amber-100/90 backdrop-blur-xl border border-amber-200 rounded-3xl shadow-2xl w-full max-w-6xl h-[85vh] flex relative overflow-hidden">
               {/* CLOSE BUTTON */}
+
               <button
                 onClick={() => setSelectedProfile(null)}
                 className="absolute top-5 right-5 text-2xl font-bold text-gray-800 hover:text-amber-700"
@@ -412,6 +413,8 @@ export default function Dashboard() {
                 {activeSection === "certifications" && (
                   <CertificationSection
                     data={selectedProfile.certifications || []}
+                    profileId={selectedProfile._id} // <-- Pass it here
+                    token={token} // <-- Pass token as well
                     onChange={(updated) =>
                       setSelectedProfile((prev) => ({
                         ...prev,

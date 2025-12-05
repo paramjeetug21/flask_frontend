@@ -35,6 +35,7 @@ export default function CertificationSection({
     setCerts(updatedCerts);
     onChange(updatedCerts);
     try {
+      console.log(profileId);
       await axios.put(
         `${apiUrl}profile/${profileId}`,
         { certifications: updatedCerts },
