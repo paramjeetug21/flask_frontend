@@ -90,7 +90,7 @@ export default function Dashboard() {
               placeholder="Search your profile by name, email, or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 
+              className="w-full px-4 py-3 rounded-xl border text-amber-100 border-gray-300 
                 focus:outline-none focus:ring-2 focus:ring-indigo-500 
                 focus:border-indigo-500 placeholder-gray-400"
             />
