@@ -1,9 +1,6 @@
 import axios from "axios";
 
-const API_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000/"
-    : "https://flask-backend-2pd6.onrender.com/";
+const API_URL = "https://flask-backend-lovat.vercel.app/";
 
 const instance = axios.create({ baseURL: API_URL });
 
