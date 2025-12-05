@@ -10,7 +10,16 @@ import CertificationSection from "../components/Certification";
 import CreateProfile from "../components/CreatProfile";
 import { useNavigate } from "react-router-dom";
 import SectionList from "../components/Custom";
-import { Linkedin, Twitter, Facebook, Copy } from "lucide-react";
+import {
+  Linkedin,
+  Twitter,
+  Facebook,
+  Copy,
+  DeleteIcon,
+  Trash2Icon,
+  Trash2,
+  Share2Icon,
+} from "lucide-react";
 import { Eye } from "lucide-react";
 
 export default function Dashboard() {
@@ -173,7 +182,7 @@ export default function Dashboard() {
                   }}
                   className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
                 >
-                  Delete
+                  <Trash2 size={16} />
                 </button>
                 <button
                   onClick={(e) => {
@@ -182,7 +191,7 @@ export default function Dashboard() {
                   }}
                   className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
                 >
-                  Share
+                  <Share2Icon size={16} />
                 </button>
               </div>
             </div>
