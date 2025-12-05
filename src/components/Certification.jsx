@@ -8,6 +8,7 @@ import {
   AiOutlinePlusCircle,
 } from "react-icons/ai";
 import axios from "axios";
+import API_URL from "../api/authApi";
 
 export default function CertificationSection({
   title = "Certifications",
@@ -25,7 +26,7 @@ export default function CertificationSection({
     certificateURL: "",
   });
   const [showAddBox, setShowAddBox] = useState(false);
-
+  const apiUrl = API_URL;
   useEffect(() => {
     setCerts(data);
   }, [data]);
@@ -35,7 +36,7 @@ export default function CertificationSection({
     onChange(updatedCerts);
     try {
       await axios.put(
-        `http://localhost:5000/profile/${profileId}`,
+        `${apiUrl}profile/${profileId}`,
         { certifications: updatedCerts },
         { headers: { Authorization: `Bearer ${token}` } }
       );

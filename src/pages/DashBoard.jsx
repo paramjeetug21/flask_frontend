@@ -26,7 +26,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const apiUrl = API_URL;
-
   useEffect(() => {
     if (!token) return;
 
@@ -440,7 +439,7 @@ export default function Dashboard() {
                       try {
                         const token = localStorage.getItem("token");
                         await axios.put(
-                          `http://localhost:5000/profile/${selectedProfile._id}`,
+                          `${apiUrl}profile/${selectedProfile._id}`,
                           selectedProfile,
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
