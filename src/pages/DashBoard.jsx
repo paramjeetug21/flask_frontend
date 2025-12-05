@@ -97,9 +97,18 @@ export default function Dashboard() {
           <CreateProfile
             token={token}
             onClose={() => setShowCreateModal(false)}
-            onProfileCreated={(newId) =>
-              console.log("New profile created with ID:", newId)
-            }
+            onProfileCreated={async (newId) => {
+              try {
+                const res = await axios.get(`${API_URL}profile/${newId}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                setProfiles((prev) => [...prev, res.data]);
+                setSelectedProfile(res.data); // optionally select new profile immediately
+                setShowCreateModal(false);
+              } catch (err) {
+                console.error("Error fetching new profile:", err);
+              }
+            }}
           />
         )}
 
@@ -445,7 +454,6 @@ export default function Dashboard() {
                           selectedProfile,
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
-                        alert("Profile saved successfully!");
                       } catch (err) {
                         console.error(err);
                         alert("Error saving profile.");
