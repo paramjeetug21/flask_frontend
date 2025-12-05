@@ -136,7 +136,7 @@ export default function Dashboard() {
             >
               {/* PROFILE INFO */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-amber-300 shadow-md">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-amber-300 shadow-md hover:scale-110 transition-all">
                   <img
                     src={
                       profile.personal?.photo ||
