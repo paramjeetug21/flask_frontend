@@ -32,7 +32,6 @@ export default function Dashboard() {
     async function loadProfiles() {
       try {
         const res = await fetchDashboard(token);
-        console.log("Dashboard fetch response:", res);
         setProfiles(res.data);
       } catch (err) {
         console.error("Profile fetch error:", err);

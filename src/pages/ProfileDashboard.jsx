@@ -42,7 +42,10 @@ export default function PortfolioPage() {
         {/* PROFILE HEADER */}
         <div className="flex flex-col md:flex-row items-center gap-8">
           <img
-            src={profile.personal.photo || "https://via.placeholder.com/150"}
+            src={
+              profile.personal.photo ||
+              "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
+            }
             alt="Profile"
             className="w-40 h-40 rounded-full border-4 border-white shadow-xl object-cover"
           />

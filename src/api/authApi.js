@@ -6,7 +6,6 @@ const instance = axios.create({ baseURL: API_URL });
 
 // USER AUTH
 export function signup(payload) {
-  console.log("payload", payload);
   return instance.post("auth/signup", payload, { withCredentials: true });
 }
 
@@ -14,12 +13,10 @@ export function login(payload) {
   return instance.post("auth/login", payload, { withCredentials: true });
 }
 export function fetchDashboard(token) {
-  console.log("Fetching dashboard with token:", token);
   return instance.get(`profile/user/${token}`);
 }
 
 export function getUser(token) {
-  console.log("Fetching user with token:", token);
   return instance.get("/user", {
     headers: { Authorization: `Bearer ${token}` },
   });
