@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../api/authApi";
 
 export default function PortfolioPage() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const apiUrl = API_URL;
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await axios.get(
-          `https://flask-backend-2pd6.onrender.com/profile/${id}`
-        );
+        const res = await axios.get(`${apiUrl}profile/${id}`);
         setProfile(res.data);
       } catch (err) {
         console.error("Error loading profile:", err);

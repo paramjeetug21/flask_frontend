@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../api/authApi";
 
 export default function ProfileView() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ export default function ProfileView() {
   const [newName, setNewName] = useState("");
   const [newPhoto, setNewPhoto] = useState(null);
   const [success, setSuccess] = useState(false);
-
+  const apiUrl = API_URL;
   useEffect(() => {
     const data = localStorage.getItem("userData");
     if (data) {
@@ -45,18 +46,15 @@ export default function ProfileView() {
   // Save changes to backend
   const handleSaveChanges = async () => {
     try {
-      const response = await fetch(
-        "https://flask-backend-2pd6.onrender.com/auth/update-profile",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: profile.user.email,
-            name: newName,
-            profile_photo: newPhoto,
-          }),
-        }
-      );
+      const response = await fetch(`${apiUrl}auth/update-profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: profile.user.email,
+          name: newName,
+          profile_photo: newPhoto,
+        }),
+      });
       const result = await response.json();
 
       if (response.ok) {
@@ -88,14 +86,11 @@ export default function ProfileView() {
       return;
 
     try {
-      const response = await fetch(
-        `https://flask-backend-2pd6.onrender.com/auth/delete-profile`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: profile.user.email }),
-        }
-      );
+      const response = await fetch(`${apiUrl}auth/delete-profile`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: profile.user.email }),
+      });
       const result = await response.json();
 
       if (response.ok) {
