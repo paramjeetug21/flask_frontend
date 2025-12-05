@@ -121,7 +121,7 @@ export default function Dashboard() {
                   <img
                     src={
                       profile.personal?.photo ||
-                      "https://via.placeholder.com/150"
+                      "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
                     }
                     alt="Profile"
                     className="w-full h-full object-cover"
@@ -237,7 +237,7 @@ export default function Dashboard() {
                   <img
                     src={
                       shareProfile.personal?.photo ||
-                      "https://via.placeholder.com/150"
+                      "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
                     }
                     alt="Profile"
                     className="w-full h-full object-cover"
@@ -498,7 +498,10 @@ export function PersonalSection({ profile, onChange }) {
         {/* Profile Photo */}
         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-amber-400 shadow-lg">
           <img
-            src={local.photo || "https://via.placeholder.com/150"}
+            src={
+              local.photo ||
+              "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
+            }
             alt="Profile"
             className="w-full h-full object-cover"
           />

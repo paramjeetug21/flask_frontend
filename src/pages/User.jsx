@@ -156,7 +156,10 @@ export default function ProfileView() {
         <div className="md:w-1/3 flex flex-col justify-center items-center p-6 relative z-10">
           <div className="w-44 h-44 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <img
-              src={newPhoto || "https://via.placeholder.com/150"}
+              src={
+                newPhoto ||
+                "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
+              }
               alt="Profile"
               className="w-full h-full object-cover"
             />
