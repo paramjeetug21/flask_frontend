@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Dashboard from "./DashBoard";
 import ProfileView from "./User";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, LayoutDashboardIcon } from "lucide-react";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -38,19 +38,19 @@ export default function Layout() {
           {/* Dashboard Button */}
           <button
             onClick={() => setActiveTab("dashboard")}
-            className={`p-2 rounded-lg font-semibold flex items-center gap-2 ${
+            className={`p-2 rounded-lg font-semibold flex items-center r gap-2 hover:scale-115 transition-all ${
               activeTab === "dashboard"
                 ? "bg-white text-indigo-700"
                 : "bg-indigo-600 text-white hover:bg-indigo-500"
             }`}
           >
-            <LayoutDashboard className="w-5 h-5" />
+            <LayoutDashboardIcon className="w-5 h-5" />
           </button>
 
           {/* Profile Avatar */}
           <button
             onClick={() => setActiveTab("profile")}
-            className={`w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md relative group transition-all ${
+            className={`w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md relative group hover:scale-112 transition-all ${
               activeTab === "profile" ? "ring-2 ring-indigo-400" : ""
             }`}
           >
