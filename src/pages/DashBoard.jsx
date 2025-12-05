@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [shareProfile, setShareProfile] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const apiUrl = API_URL;
@@ -454,6 +456,10 @@ export default function Dashboard() {
                           selectedProfile,
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
+
+                        // Show toast
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 1000); // hide after 1 sec
                       } catch (err) {
                         console.error(err);
                         alert("Error saving profile.");
@@ -469,6 +475,11 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 px-4 py-2 bg-green-400/40 backdrop-blur-md text-white font-semibold rounded-xl shadow-lg transition-transform transform duration-1000 ease-out animate-bounce">
+          Saved successfully!
+        </div>
+      )}
     </div>
   );
 }
