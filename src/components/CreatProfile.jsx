@@ -94,7 +94,6 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("Profile created successfully!");
       onProfileCreated(res.data.profile_id);
       onClose();
     } catch (err) {
