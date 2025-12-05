@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchDashboard } from "../api/authApi";
+import API_URL, { fetchDashboard } from "../api/authApi";
 import Loader from "../components/Loader";
 import axios from "axios";
 import EducationSection from "../components/Education";
@@ -25,13 +25,13 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const apiUrl = API_URL;
 
   useEffect(() => {
     if (!token) return;
 
     async function loadProfiles() {
       try {
-        console.log("Token:", token);
         const res = await fetchDashboard(token);
 
         setProfiles(res.data);
@@ -193,7 +193,7 @@ export default function Dashboard() {
                     try {
                       const token = localStorage.getItem("token");
                       await axios.delete(
-                        `http://localhost:5000/profile/${deleteProfileId}`,
+                        `${API_URL}profile/${deleteProfileId}`,
                         { headers: { Authorization: `Bearer ${token}` } }
                       );
                       setProfiles(
@@ -259,7 +259,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   readOnly
-                  value={`${window.location.origin}/Portfolio/${shareProfile._id}`}
+                  value={`${apiUrl}/Portfolio/${shareProfile._id}`}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none"
                 />
                 <button

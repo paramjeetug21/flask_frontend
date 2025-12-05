@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import API_URL from "../api/authApi";
 
 export default function CreateProfile({ token, onProfileCreated, onClose }) {
   const [name, setName] = useState("");
@@ -8,7 +9,7 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const apiUrl = API_URL;
   const handleSubmit = async () => {
     if (!name || !email) {
       alert("Name and Email are required!");
@@ -22,7 +23,7 @@ export default function CreateProfile({ token, onProfileCreated, onClose }) {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/profile/", payload, {
+      const res = await axios.post(`${apiUrl}profile/`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Profile created successfully!");
