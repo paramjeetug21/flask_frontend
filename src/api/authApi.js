@@ -1,9 +1,6 @@
 import axios from "axios";
 
-const API_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000/"
-    : "https://flask-backend-lovat.vercel.app/";
+const API_URL = "https://flask-backend-lovat.vercel.app/";
 
 const instance = axios.create({ baseURL: API_URL });
 
@@ -17,11 +14,12 @@ export function login(payload) {
   return instance.post("auth/login", payload, { withCredentials: true });
 }
 export function fetchDashboard(token) {
-  
+  console.log("Fetching dashboard with token:", token);
   return instance.get(`profile/user/${token}`);
 }
 
 export function getUser(token) {
+  console.log("Fetching user with token:", token);
   return instance.get("/user", {
     headers: { Authorization: `Bearer ${token}` },
   });

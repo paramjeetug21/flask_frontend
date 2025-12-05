@@ -31,6 +31,7 @@ export default function Dashboard() {
 
     async function loadProfiles() {
       try {
+        console.log("Token:", token);
         const res = await fetchDashboard(token);
 
         setProfiles(res.data);
