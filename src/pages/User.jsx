@@ -46,7 +46,7 @@ export default function ProfileView() {
   const handleSaveChanges = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/auth/update-profile",
+        "https://flask-backend-2pd6.onrender.com/auth/update-profile",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -89,7 +89,7 @@ export default function ProfileView() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/auth/delete-profile`,
+        `https://flask-backend-2pd6.onrender.com/auth/delete-profile`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },

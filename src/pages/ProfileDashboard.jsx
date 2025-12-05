@@ -10,7 +10,9 @@ export default function PortfolioPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await axios.get(`http://localhost:5000/profile/${id}`);
+        const res = await axios.get(
+          `https://flask-backend-2pd6.onrender.com/profile/${id}`
+        );
         setProfile(res.data);
       } catch (err) {
         console.error("Error loading profile:", err);
