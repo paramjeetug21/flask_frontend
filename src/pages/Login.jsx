@@ -1,134 +1,180 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import loginBg from "../assets/loginPage.jpg";
+import { Typewriter } from "react-simple-typewriter";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/authContext";
-import ThemeToggle from "../components/ThemeToggle";
-import { Mail, Lock } from "lucide-react"; // Icons
 
 export default function Login() {
-  const { login, loading, darkMode } = useAuth();
+  const { login, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const navigate = useNavigate();
+  // State to track if the card is focused
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const res = await login({ email, password });
+
     if (res.ok) {
-      alert("Login Successful");
       navigate("/");
-    } else alert(res.error);
+    } else {
+      alert(res.error);
+    }
   };
 
-  const bgGradient = darkMode
-    ? "bg-gradient-to-br from-gray-800 via-gray-900 to-black"
-    : "bg-gradient-to-br from-pink-100 via-blue-100 to-yellow-100";
-
-  const cardBg = darkMode
-    ? "backdrop-blur-2xl bg-gray-900/70 border border-gray-700 text-white shadow-xl"
-    : "backdrop-blur-2xl bg-white/30 border border-white/40 shadow-xl";
-
-  const inputClass = darkMode
-    ? "w-full mt-1 px-10 py-2 rounded-xl border border-gray-700 bg-gray-800/70 text-white focus:ring-2 focus:ring-green-500 outline-none"
-    : "w-full mt-1 px-10 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-pink-300 outline-none bg-white/70";
-
-  const buttonClass = darkMode
-    ? "w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg bg-gradient-to-r from-green-700 via-blue-700 to-pink-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-    : "w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg bg-gradient-to-r from-pink-400 via-sky-400 to-green-400 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]";
+  const upperWords = ["Welcome", "Back", "Professional", "Creative", "Focused"];
+  const lowerLines = [
+    "Log in to manage your profile",
+    "Your identity, your control",
+    "Fast. Secure. Reliable.",
+    "Let's get you back in!",
+  ];
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden ${bgGradient}`}
+      className="min-h-screen w-full flex items-center justify-start px-10 relative overflow-hidden"
+      // 1. Reset blur when clicking anywhere on the background
+      onClick={() => setActive(false)}
     >
-      {/* Floating pastel blobs */}
-      <div className="absolute w-52 h-52 rounded-full blur-2xl bg-pink-300/40 -top-6 -left-6 animate-pulse"></div>
-      <div className="absolute w-52 h-52 rounded-full blur-2xl bg-green-300/40 bottom-6 right-0 animate-pulse delay-150"></div>
-      <div className="absolute w-52 h-52 rounded-full blur-2xl bg-sky-300/40 top-1/2 left-1/3 animate-pulse delay-300"></div>
+      <p
+        onClick={() => navigate("/about")}
+        className="absolute top-6 right-15 z-50 text-white font-light text-sm cursor-pointer hover:text-gray-300 transition-colors tracking-wide "
+      >
+        About
+      </p>
+      {/* Background Image */}
+      <div
+        // 2. Added dynamic Tailwind classes for smooth blur and scale transition
+        className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out transform will-change-transform ${
+          active ? "blur-sm scale-105" : "blur-0 scale-100"
+        }`}
+        style={{
+          backgroundImage: `url(${loginBg})`,
+          backgroundSize: "cover", // Changed to cover for better responsiveness
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></div>
 
-      {/* Glass Card */}
-      <div className={`${cardBg} p-8 rounded-2xl w-full max-w-sm relative`}>
-        {/* Theme Toggle */}
-        <div className="flex justify-end mb-4">
-          <ThemeToggle />
-        </div>
+      {/* Overlay - Optional: Adjust opacity based on focus if desired, kept static for now */}
+      <div className="absolute inset-0 bg-black/25"></div>
 
-        {/* User Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-            <span>👤</span>
-          </div>
-        </div>
-
-        <h1 className="text-2xl font-bold text-center mb-1 text-purple-800">
-          Welcome Back
-        </h1>
-        <p
-          className={`text-center mb-6 ${
-            darkMode ? "text-gray-300" : "text-gray-600"
-          }`}
+      {/* Login Card */}
+      <motion.div
+        initial={{ opacity: 0, x: -100 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 100 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="min-h-screen ..."
+      >
+        <div
+          className="relative z-20 w-full max-w-sm p-8 rounded-2xl shadow-xl ml-32 mt-36 bg-white/1 backdrop-blur-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setActive(true);
+          }}
         >
-          Sign in to your account
-        </p>
+          <h1 className="text-3xl font-bold text-white drop-shadow mb-6">
+            Welcome Back
+          </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
-          <div className="relative">
-            <Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className={inputClass}
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
+            <div className="relative">
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full bg-transparent outline-none placeholder-gray-300 text-white py-3 px-4 rounded-lg border border-white/20"
+              />
+            </div>
 
-          {/* Password */}
-          {/* Password */}
-          <div className="relative">
-            <Lock className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className={inputClass}
-              required
-            />
-            <span
-              className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
-              onClick={() => setShowPassword((prev) => !prev)}
+            {/* Password */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full bg-transparent outline-none placeholder-gray-300 text-white py-3 px-4 pr-10 rounded-lg border border-white/20"
+              />
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-white"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
+
+            {/* Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-white/90 text-black font-semibold rounded-lg shadow-md hover:bg-white transition-all"
             >
-              {showPassword ? "🙈" : "👁️"}
-            </span>
-          </div>
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
 
-          {/* Button */}
-          <button type="submit" disabled={loading} className={buttonClass}>
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
+            <p className="text-center text-white mt-3 text-sm font-medium">
+              Don’t have an account?{" "}
+              <Link
+                to="/signup"
+                className="underline cursor-pointer font-bold hover:text-blue-100 transition-colors relative z-20"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </form>
+        </div>
+      </motion.div>
 
-        {/* Signup Link */}
-        <p
-          className={`text-center mt-4 text-sm ${
-            darkMode ? "text-gray-300" : "text-gray-700"
-          }`}
+      {/* Right Side Fancy Text */}
+      <div
+        // 5. Apply blur to the text as well when card is active (Same as Signup logic)
+        className={`absolute right-20 top-1/3 max-w-lg transition-all duration-700 ${
+          active ? "blur-sm opacity-70" : "blur-0 opacity-100"
+        }`}
+      >
+        {/* Upper Line - Big Words */}
+        <h1
+          className="text-5xl md:text-6xl font-extrabold text-white mb-6"
+          style={{ fontFamily: "Poppins, sans-serif" }}
         >
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className={
-              darkMode
-                ? "text-pink-400 font-medium"
-                : "text-blue-500 font-medium"
-            }
-          >
-            Create Account
-          </Link>
-        </p>
+          <Typewriter
+            words={upperWords}
+            loop={0}
+            cursor
+            cursorStyle="|"
+            typeSpeed={120}
+            deleteSpeed={80}
+            delaySpeed={1500}
+          />
+        </h1>
+
+        {/* Lower Line - Independent */}
+        <h2 className="text-2xl md:text-3xl text-white font-semibold">
+          <Typewriter
+            words={lowerLines}
+            loop={0}
+            cursor
+            cursorStyle="_"
+            typeSpeed={70}
+            deleteSpeed={50}
+            delaySpeed={2000}
+          />
+        </h2>
       </div>
     </div>
   );

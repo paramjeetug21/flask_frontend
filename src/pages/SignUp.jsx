@@ -1,175 +1,185 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import ProfilePhotoUploader from "../components/ProfilePhotoUploader";
-import ThemeToggle from "../components/ThemeToggle";
-import { Camera, User, Mail, Lock } from "lucide-react";
+import signupBg from "../assets/signup.jpg";
+import { Typewriter } from "react-simple-typewriter";
+import { motion } from "framer-motion";
 
-export default function Signup() {
-  const { signup, loading, darkMode } = useAuth();
+export default function SignUp() {
+  const { signup, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [photo, setPhoto] = useState("");
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  // 1. NEW STATE: Track if the card is active/focused
+  const [isCardActive, setIsCardActive] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) return alert("Fill all required fields");
-
-    const res = await signup({ name, email, password, photo });
+    const res = await signup({ name, email, password });
     if (res.ok) {
-      alert("Signup successful! Please login.");
       navigate("/login");
-    } else alert(res.error);
+    } else {
+      alert(res.error);
+    }
   };
 
-  const bgGradient = darkMode
-    ? "bg-gradient-to-br from-gray-800 via-gray-900 to-black"
-    : "bg-gradient-to-br from-pink-100 via-blue-100 to-yellow-100";
-
-  const cardBg = darkMode
-    ? "backdrop-blur-2xl bg-gray-900/70 border border-gray-700 text-white"
-    : "backdrop-blur-2xl bg-white/30 border border-white/40";
-
-  const inputClass = darkMode
-    ? "w-full mt-1 px-10 py-2 rounded-lg border border-gray-700 bg-gray-800/70 text-white focus:ring-2 focus:ring-green-500 outline-none"
-    : "w-full mt-1 px-10 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-pink-300 outline-none bg-white/70";
+  const upperWords = ["Join", "Create", "Shine"];
+  const lowerLines = [
+    "Build your professional identity",
+    "Showcase your skills",
+    "Stand out effortlessly",
+  ];
 
   return (
+    // 2. MAIN CONTAINER CLICK: Clicking outside the card resets the active state
     <div
-      className={`min-h-screen flex items-center justify-center p-3 relative overflow-hidden ${bgGradient}`}
+      className="min-h-screen w-full flex items-center justify-start px-10 relative overflow-hidden"
+      onClick={() => setIsCardActive(false)}
     >
-      {/* Floating pastel blobs */}
-      <div
-        className={`absolute w-40 h-40 ${
-          darkMode ? "bg-green-800/40" : "bg-pink-300/40"
-        } blur-2xl rounded-full -top-6 -left-6`}
-      ></div>
-      <div
-        className={`absolute w-40 h-40 ${
-          darkMode ? "bg-blue-800/40" : "bg-green-300/40"
-        } blur-2xl rounded-full bottom-6 right-0`}
-      ></div>
-
-      {/* Glass Card */}
-      <div
-        className={`${cardBg} shadow-xl p-5 rounded-2xl w-full max-w-sm relative`}
+      <p
+        onClick={() => navigate("/")}
+        className="absolute top-6 right-15 z-50 text-white font-light text-sm cursor-pointer hover:text-gray-300 transition-colors tracking-wide "
       >
-        {/* Theme Toggle */}
-        <div className="flex justify-end mb-2">
-          <ThemeToggle />
-        </div>
+        About
+      </p>
+      {/* Background Image - Updated with conditional blur and transition */}
+      <div
+        // 4. DYNAMIC CLASSES: Added transition and conditional blur-2xl/scale-105
+        // scale-105 prevents blurred edges from pulling inwards at the screen borders.
+        className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out transform will-change-transform ${
+          isCardActive ? "blur-sm scale-105" : "blur-0 scale-100"
+        }`}
+        style={{
+          backgroundImage: `url(${signupBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
 
-        {/* Photo at top center with camera overlay */}
-        <div className="flex justify-center mb-4 relative">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300 shadow-md">
-              {photo ? (
-                <img
-                  src={photo}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <ProfilePhotoUploader
-                  photo={photo}
-                  setPhoto={setPhoto}
-                  darkMode={darkMode}
-                  isInline={false}
-                />
-              )}
-            </div>
-
-            {/* Camera Icon Overlay */}
-            <label className="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 p-1 rounded-full cursor-pointer">
-              <Camera className="w-4 h-4 text-white" />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => setPhoto(reader.result);
-                  reader.readAsDataURL(file);
-                }}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
-        <h1 className="text-xl font-bold text-center mb-1">Create Account</h1>
-        <p className="text-center text-gray-400 mb-4">
-          Start your journey with us
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Full Name */}
-          <div className="relative">
-            <User className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              className={inputClass}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full Name"
-              required
-            />
-          </div>
-
-          {/* Email */}
-          <div className="relative">
-            <Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="email"
-              className={inputClass}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div className="relative">
-            <Lock className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="password"
-              className={inputClass}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-            />
-          </div>
-
-          {/* Sign Up Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2.5 mt-2 rounded-xl font-semibold text-md shadow-md hover:shadow-lg transition-all hover:scale-[1.02] ${
-              darkMode
-                ? "bg-gradient-to-r from-green-700 via-blue-700 to-pink-700 text-white"
-                : "bg-gradient-to-r from-pink-400 via-sky-400 to-green-400 text-white"
-            }`}
+      {/* Card Container */}
+      <div className="relative z-50 w-full max-w-sm ml-32">
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div
+            className="relative p-8 rounded-2xl shadow-2xl bg-white/1 backdrop-blur-xs border border-white/2 transition-all duration-300"
+            // 3. CARD CLICK: Stop propagation and set state to active
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsCardActive(true);
+            }}
           >
-            {loading ? "Creating..." : "Sign Up"}
-          </button>
+            <h1 className="text-3xl font-bold text-white drop-shadow mb-6">
+              Let's Build Together
+            </h1>
 
-          {/* Navigate to login */}
-          <div className="text-center mt-2">
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className={`text-sm font-medium underline ${
-                darkMode ? "text-green-400" : "text-blue-500"
-              }`}
-            >
-              Already have an account? Login
-            </button>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Input */}
+              <div className="relative">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  className="w-full bg-transparent outline-none placeholder-gray-200 text-white py-3 px-4 rounded-lg border border-white/30 focus:border-white/60 transition-colors"
+                  required
+                  // Optional: trigger active state on focus too
+                  onFocus={() => setIsCardActive(true)}
+                />
+              </div>
+
+              {/* Email Input */}
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  className="w-full bg-transparent outline-none placeholder-gray-200 text-white py-3 px-4 rounded-lg border border-white/30 focus:border-white/60 transition-colors"
+                  required
+                  onFocus={() => setIsCardActive(true)}
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full bg-transparent outline-none placeholder-gray-200 text-white py-3 px-4 pr-10 rounded-lg border border-white/30 focus:border-white/60 transition-colors"
+                  required
+                  onFocus={() => setIsCardActive(true)}
+                />
+                <span
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-white hover:text-gray-200 z-10"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </span>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-white text-gray-900 font-bold rounded-lg shadow-md hover:bg-gray-100 hover:scale-[1.02] transition-all active:scale-95"
+              >
+                {loading ? "Creating..." : "Sign Up"}
+              </button>
+
+              <p className="text-center text-white mt-3 text-sm font-medium">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="underline cursor-pointer font-bold hover:text-blue-100 transition-colors relative z-20"
+                >
+                  Login
+                </Link>
+              </p>
+            </form>
           </div>
-        </form>
+        </motion.div>
+      </div>
+
+      {/* Right Side Fancy Text - (Bonus) Blur this too so focus is entirely on card */}
+      <div
+        className={`absolute right-20 top-1/3 max-w-lg hidden md:block transition-all duration-700 ${
+          isCardActive ? "blur-sm opacity-70" : "blur-0 opacity-100"
+        }`}
+      >
+        <h1
+          className="text-5xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
+          style={{ fontFamily: "Poppins, sans-serif" }}
+        >
+          <Typewriter
+            words={upperWords}
+            loop={0}
+            cursor
+            cursorStyle="|"
+            typeSpeed={100}
+            deleteSpeed={50}
+            delaySpeed={500}
+          />
+        </h1>
+        <h2 className="text-2xl md:text-3xl text-white font-semibold drop-shadow-md">
+          <Typewriter
+            words={lowerLines}
+            loop={0}
+            cursor
+            cursorStyle="_"
+            typeSpeed={70}
+            deleteSpeed={40}
+            delaySpeed={1500}
+          />
+        </h2>
       </div>
     </div>
   );

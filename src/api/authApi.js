@@ -1,16 +1,16 @@
 import axios from "axios";
 
-const API_URL = "https://flask-backend-lovat.vercel.app/";
-
+const API_URL = import.meta.env.VITE_API_URL;
+console.log("API_URL:", API_URL);
 const instance = axios.create({ baseURL: API_URL });
 
 // USER AUTH
 export function signup(payload) {
-  return instance.post("auth/signup", payload, { withCredentials: true });
+  return instance.post("/auth/signup", payload, { withCredentials: true });
 }
 
 export function login(payload) {
-  return instance.post("auth/login", payload, { withCredentials: true });
+  return instance.post("/auth/login", payload, { withCredentials: true });
 }
 export function fetchDashboard(token) {
   return instance.get(`profile/user/${token}`);

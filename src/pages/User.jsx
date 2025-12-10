@@ -1,224 +1,262 @@
-import { useEffect, useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  LogOut,
+  User,
+  Camera,
+  Save,
+  X,
+  ChevronDown,
+  Loader2,
+} from "lucide-react";
+import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
-import API_URL from "../api/authApi";
+import API_URL from "../api/authApi"; // Ensure this is your base URL (e.g., "http://localhost:5000")
 
-export default function ProfileView() {
+export default function UserMenu() {
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newPhoto, setNewPhoto] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const apiUrl = API_URL;
+
+  // UI States
+  const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const menuRef = useRef(null);
+
+  // Get User Data from Local Storage
+  const user = JSON.parse(localStorage.getItem("userData"))?.user;
+
+  // Form States
+  const [newName, setNewName] = useState(user?.name || "");
+  const [newPhoto, setNewPhoto] = useState(
+    user?.profile_photo || user?.photo || null
+  );
+
+  // --- 1. HANDLE OUTSIDE CLICK ---
   useEffect(() => {
-    const data = localStorage.getItem("userData");
-    if (data) {
-      const parsed = JSON.parse(data);
-      setUserData(parsed);
-      setNewName(parsed.user.name);
-      setNewPhoto(parsed.user.profile_photo);
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setIsEditing(false); // Reset edit mode on close
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!userData) {
-    return (
-      <div
-        className="min-h-screen p-8 bg-radial from-[#0A0F2C] via-[#1B2A5A] to-black
-"
-      >
-        Loading profile...
-      </div>
-    );
-  }
-
-  const profile = userData;
-
-  // Convert file → base64
+  // --- 2. HANDLE FILE UPLOAD ---
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => setNewPhoto(reader.result);
     reader.readAsDataURL(file);
   };
 
-  // Save changes to backend
+  // --- 3. SAVE CHANGES (API CALL) ---
   const handleSaveChanges = async () => {
+    if (!user?.email) {
+      alert("User email not found. Please login again.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const response = await fetch(`${apiUrl}auth/update-profile`, {
+      // FIX: Removed space and ensured correct path structure for Flask Blueprint
+      const response = await fetch(`${API_URL}/auth/update-profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: profile.user.email,
+          email: user.email, // Required by backend to find user
           name: newName,
           profile_photo: newPhoto,
         }),
       });
-      const result = await response.json();
 
       if (response.ok) {
+        const result = await response.json();
+
+        // Update Local Storage manually so UI updates immediately
+        const storedData = JSON.parse(localStorage.getItem("userData"));
+
+        // Update specific fields based on backend response or local state
         const updatedUser = {
-          ...profile,
+          ...storedData,
           user: {
-            ...profile.user,
+            ...storedData.user,
             name: newName,
+            // Handle naming inconsistency (backend might return 'profile_photo' or 'photo')
+            photo: newPhoto,
             profile_photo: newPhoto,
           },
         };
+
         localStorage.setItem("userData", JSON.stringify(updatedUser));
-        setUserData(updatedUser);
-        setSuccess(true);
-        setEditMode(false);
-        setTimeout(() => setSuccess(false), 2000);
+
+        // Reload to reflect changes globally
+        window.location.reload();
+
+        setIsEditing(false);
       } else {
-        alert(result.error || "Failed to update!");
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to update profile.");
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
-    }
-  };
-
-  // Delete profile
-  const handleDeleteProfile = async () => {
-    if (!window.confirm("Are you sure you want to delete your profile?"))
-      return;
-
-    try {
-      const response = await fetch(`${apiUrl}auth/delete-profile`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: profile.user.email }),
-      });
-      const result = await response.json();
-
-      if (response.ok) {
-        localStorage.clear();
-        navigate("/signup");
-        alert("Profile deleted successfully!");
-      } else {
-        alert(result.error || "Failed to delete profile!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
+      alert("Something went wrong. Check console.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    logout();
     navigate("/login");
   };
 
+  // Helper for default avatar
+  const defaultPhoto =
+    "https://ui-avatars.com/api/?name=" +
+    (user?.name || "User") +
+    "&background=random&color=fff";
+
+  // Use either the photo from DB or profile_photo depending on how your object is structured
+  const displayPhoto = user?.profile_photo || user?.photo || defaultPhoto;
+
   return (
-    <div
-      className="min-h-screen  p-8 bg-radial from-[#0A0F2C] via-[#1B2A5A] to-black
- flex flex-col items-center py-10 px-4 "
-    >
-      {/* TOP BUTTONS */}
-      <div className="w-full max-w-5xl flex justify-end gap-4 mb-8">
-        {/* EDIT BUTTON */}
-        {!editMode && (
-          <button
-            onClick={() => setEditMode(true)}
-            className="px-4 py-2 border border-blue-500 rounded font-semibold text-white bg-blue-600 hover:bg-blue-700"
-          >
-            Edit Profile
-          </button>
-        )}
-
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 border border-red-300 rounded font-semibold text-red-700 hover:bg-red-100"
-        >
-          Logout
-        </button>
-
-        <button
-          onClick={handleDeleteProfile}
-          className="px-4 py-2 border border-red-500 rounded font-semibold text-white bg-red-600 hover:bg-red-700"
-        >
-          Delete Profile
-        </button>
+    <div className="relative z-50" ref={menuRef}>
+      {/* === TRIGGER BUTTON (Avatar on Dashboard) === */}
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1.5 pr-3 rounded-full transition-all duration-200 border border-transparent hover:border-gray-200"
+      >
+        <img
+          src={displayPhoto}
+          alt="User"
+          className="w-9 h-9 rounded-full object-cover border border-gray-300 shadow-sm"
+        />
+        <div className="hidden md:flex flex-col items-start leading-none">
+          <span className="text-sm font-bold text-shadow-white hover:text-gray-800">
+            {user?.name?.split(" ")[0]}
+          </span>
+          <span className="text-[10px] text-gray-500 font-medium">Me</span>
+        </div>
+        <ChevronDown
+          size={14}
+          className={`text-gray-400 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </div>
 
-      {/* SUCCESS MESSAGE */}
-      {success && (
-        <div className="mb-4 px-4 py-2 bg-green-200 text-green-800 rounded-lg shadow">
-          Profile updated successfully!
-        </div>
-      )}
-
-      {/* PROFILE CARD */}
-      <div className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-        {/* LEFT PHOTO */}
-        <div className="md:w-1/3 flex flex-col justify-center items-center p-6 relative z-10">
-          <div className="w-44 h-44 rounded-full overflow-hidden border-4 border-white shadow-lg">
-            <img
-              src={
-                newPhoto ||
-                "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
-              }
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* EDIT MODE PHOTO UPLOAD */}
-          {editMode && (
-            <label className="mt-3 px-4 py-2 bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300 cursor-pointer">
-              Change Photo
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-
-        {/* RIGHT SIDE DETAILS */}
-        <div className="flex-1 p-6 md:p-10 flex flex-col justify-center z-10 space-y-4">
-          {/* NAME EDIT SECTION */}
-          {!editMode ? (
-            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-800">
-              {profile.user.name}
-            </h1>
-          ) : (
+      {/* === DROPDOWN CARD === */}
+      {isOpen && (
+        <div className="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+          {/* --- VIEW MODE --- */}
+          {!isEditing ? (
             <>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="border px-3 py-2 rounded-lg text-gray-700 w-full"
-                placeholder="Enter name"
-              />
-              <div className="flex gap-3 mt-2">
+              {/* Header */}
+              <div className="p-6 flex flex-col items-center text-center bg-gray-50/50 border-b border-gray-100">
+                <img
+                  src={displayPhoto}
+                  className="w-20 h-20 rounded-full border-4 border-white shadow-md mb-3 object-cover"
+                  alt="Profile"
+                />
+                <h3 className="text-lg font-bold text-gray-800">
+                  {user?.name}
+                </h3>
+                <p className="text-sm text-gray-500 font-medium">
+                  {user?.email}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="p-2 space-y-1">
                 <button
-                  onClick={handleSaveChanges}
-                  className="px-4 py-2 bg-green-200 text-green-800 rounded-lg hover:bg-green-300"
+                  onClick={() => setIsEditing(true)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
                 >
-                  Save Changes
+                  <User size={18} className="text-gray-400" />
+                  Edit Profile
                 </button>
+
+                <div className="h-px bg-gray-100 my-1 mx-2"></div>
+
                 <button
-                  onClick={() => setEditMode(false)}
-                  className="px-4 py-2 bg-red-200 text-red-800 rounded-lg hover:bg-red-300"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                 >
-                  Cancel
+                  <LogOut size={18} />
+                  Sign Out
                 </button>
               </div>
             </>
-          )}
+          ) : (
+            /* --- EDIT MODE --- */
+            <div className="p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-md font-bold text-gray-800">
+                  Edit Profile
+                </h3>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-          {/* EMAIL */}
-          <div className="flex flex-wrap gap-4 mt-4">
-            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
-              {profile.user.email}
-            </span>
-          </div>
+              {/* 1. Edit Photo */}
+              <div className="flex justify-center mb-6">
+                <div className="relative group cursor-pointer">
+                  <img
+                    src={newPhoto || displayPhoto}
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 group-hover:opacity-50 transition-opacity"
+                    alt="Preview"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera size={24} className="text-gray-600" />
+                  </div>
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={handlePhotoChange}
+                  />
+                </div>
+              </div>
+
+              {/* 2. Edit Name */}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase">
+                    Full Name
+                  </label>
+                  {/* FIX: Added text-gray-900 and bg-gray-100 for better visibility */}
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                    placeholder="Enter your name"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isLoading}
+                  className="w-full py-2.5 bg-black text-white text-sm font-bold rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

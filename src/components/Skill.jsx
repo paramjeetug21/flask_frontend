@@ -1,11 +1,37 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  AiFillEdit,
-  AiFillDelete,
-  AiOutlineCheck,
+  AiOutlinePlus,
   AiOutlineClose,
-  AiOutlinePlusCircle,
+  AiOutlineDelete,
+  AiOutlineEdit,
+  AiOutlineThunderbolt,
 } from "react-icons/ai";
+
+// --- Helper: Darker Minimal Input ---
+const MinimalInput = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}) => (
+  <div className="relative flex flex-col w-full group">
+    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-black">
+      {label}
+    </label>
+    <div className="relative">
+      <input
+        type={type}
+        className="peer w-full py-2 border-b border-gray-400 bg-transparent outline-none font-medium text-sm placeholder-gray-400 text-gray-900 transition-all focus:border-black"
+        value={value}
+        placeholder={placeholder}
+        onChange={onChange}
+      />
+      {/* Animated Underline */}
+      <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-500 ease-out peer-focus:w-full" />
+    </div>
+  </div>
+);
 
 export default function SkillsSection({
   title = "Skills",
@@ -17,17 +43,31 @@ export default function SkillsSection({
   const [newEntry, setNewEntry] = useState({ category: "", skills: "" });
   const [showAddBox, setShowAddBox] = useState(false);
 
+  // --- SAFE EFFECT (Prevents Infinite Loop) ---
   useEffect(() => {
-    setSkillsList(data);
-  }, [data]);
+    const processedData = data.map((item) => ({
+      ...item,
+      skills: item.skills,
+    }));
+
+    setSkillsList((prev) => {
+      if (JSON.stringify(prev) !== JSON.stringify(processedData)) {
+        return processedData;
+      }
+      return prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(data)]);
 
   const autoSave = (updatedSkills) => {
     setSkillsList(updatedSkills);
-    onChange(updatedSkills);
+    if (onChange) onChange(updatedSkills);
   };
 
   const handleEditSave = (index) => {
     const updatedSkills = [...skillsList];
+
+    // Logic: Convert string to array if it's a string (from input)
     updatedSkills[index].skills =
       typeof updatedSkills[index].skills === "string"
         ? updatedSkills[index].skills
@@ -35,6 +75,7 @@ export default function SkillsSection({
             .map((s) => s.trim())
             .filter(Boolean)
         : updatedSkills[index].skills;
+
     setEditingIndex(null);
     autoSave(updatedSkills);
   };
@@ -59,7 +100,9 @@ export default function SkillsSection({
 
   const handleSkillChange = (e, index = null) => {
     let value = e.target.value;
+    // Auto-insert comma on space
     if (value.endsWith(" ")) value = value.trim() + ", ";
+
     if (index !== null) {
       setSkillsList((prev) => {
         const copy = [...prev];
@@ -71,130 +114,191 @@ export default function SkillsSection({
     }
   };
 
-  return (
-    <div className="bg-white/40 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
-      <h3 className="text-2xl font-bold text-purple-600 mb-4">{title}</h3>
+  // Helper to safely render skills in View Mode
+  const renderSkillsPills = (skillsData) => {
+    const skillsArray = Array.isArray(skillsData)
+      ? skillsData
+      : typeof skillsData === "string"
+      ? skillsData.split(",")
+      : [];
 
-      {skillsList.length > 0 ? (
-        <ul className="space-y-4 mb-6">
-          {skillsList.map((item, i) => (
-            <li
-              key={i}
-              className="p-4 bg-white/30 rounded-xl shadow flex justify-between items-start"
-            >
-              {editingIndex === i ? (
-                <div className="flex-1 space-y-2">
-                  <input
-                    type="text"
-                    className="w-full p-2 rounded-xl border"
-                    placeholder="Category"
+    return skillsArray.map(
+      (sk, idx) =>
+        sk.trim() && (
+          <span
+            key={idx}
+            className="px-3 py-1 bg-gray-200 text-gray-800 text-[10px] font-bold uppercase tracking-wide rounded-sm border border-gray-300"
+          >
+            {sk.trim()}
+          </span>
+        )
+    );
+  };
+
+  // Helper to get string value for Input Mode
+  const getSkillsString = (skillsData) => {
+    return Array.isArray(skillsData) ? skillsData.join(", ") : skillsData;
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto animate-fadeIn">
+      {/* --- Section Header --- */}
+      <div className="flex items-end justify-between mb-8 border-b-2 border-gray-800 pb-4">
+        <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">
+          {title}
+        </h3>
+        <span className="text-[10px] text-gray-500 font-bold font-mono tracking-widest">
+          {skillsList.length < 10 ? `0${skillsList.length}` : skillsList.length}{" "}
+          CATEGORIES
+        </span>
+      </div>
+
+      {/* --- List of Skills --- */}
+      <div className="space-y-6">
+        {skillsList.map((item, i) => (
+          <div
+            key={i}
+            className={`group relative transition-all duration-300 ${
+              editingIndex === i ? "mb-8" : ""
+            }`}
+          >
+            {editingIndex === i ? (
+              // --- EDIT MODE ---
+              <div className="p-8 bg-gray-100 border border-gray-300 rounded-lg space-y-8 animate-slideDown shadow-inner">
+                <div className="flex justify-between items-center pb-4 border-b border-gray-300">
+                  <span className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                    Editing Category
+                  </span>
+                  <button
+                    onClick={() => setEditingIndex(null)}
+                    className="text-gray-500 hover:text-black transition-colors"
+                  >
+                    <AiOutlineClose size={18} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-8">
+                  <MinimalInput
+                    label="Category Name"
                     value={item.category}
                     onChange={(e) => {
                       const copy = [...skillsList];
                       copy[i].category = e.target.value;
                       setSkillsList(copy);
                     }}
+                    placeholder="Ex. Frontend, Backend, Tools"
                   />
-                  <input
-                    type="text"
-                    className="w-full p-2 rounded-xl border"
-                    placeholder="Skills (comma separated)"
-                    value={item.skills}
+                  <MinimalInput
+                    label="Skills List (comma separated)"
+                    value={getSkillsString(item.skills)}
                     onChange={(e) => handleSkillChange(e, i)}
+                    placeholder="React, Node.js, Python..."
                   />
-                  <div className="flex gap-2 mt-2">
+                </div>
+
+                <div className="pt-4 flex gap-4">
+                  <button
+                    onClick={() => handleEditSave(i)}
+                    className="px-8 py-3 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black transition-all duration-300 hover:shadow-lg transform active:scale-95"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setEditingIndex(null)}
+                    className="px-6 py-3 border border-gray-400 text-gray-700 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // --- VIEW MODE ---
+              <div className="relative p-6 bg-gray-50 border border-gray-200 rounded-lg hover:border-gray-400 transition-all duration-300">
+                <div className="flex justify-between items-start">
+                  <div className="w-full">
+                    <h4 className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-3">
+                      <AiOutlineThunderbolt className="text-gray-400" />
+                      {item.category || "Uncategorized"}
+                    </h4>
+
+                    <div className="flex flex-wrap gap-2 mt-4 pl-7">
+                      {renderSkillsPills(item.skills)}
+                    </div>
+                  </div>
+
+                  {/* Hover Actions */}
+                  <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 ml-4">
                     <button
-                      onClick={() => handleEditSave(i)}
-                      className="p-1 bg-green-500 rounded text-white hover:cursor-pointer "
+                      onClick={() => setEditingIndex(i)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-500 hover:text-black hover:border-black transition-all shadow-sm"
+                      title="Edit"
                     >
-                      <AiOutlineCheck />
+                      <AiOutlineEdit size={14} />
                     </button>
                     <button
-                      onClick={() => setEditingIndex(null)}
-                      className="p-1 bg-red-500 rounded text-white hover:cursor-pointer"
+                      onClick={() => handleDelete(i)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-500 hover:text-red-700 hover:border-red-700 transition-all shadow-sm"
+                      title="Delete"
                     >
-                      <AiOutlineClose />
+                      <AiOutlineDelete size={14} />
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold">{item.category}</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {item.skills.map((sk, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-blue-500/20 text-blue-700 rounded-xl text-sm border border-blue-300"
-                      >
-                        {sk}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
-              {editingIndex !== i && (
-                <div className="flex flex-col gap-2 ml-4 mt-1">
-                  <button
-                    onClick={() => setEditingIndex(i)}
-                    className="p-1 bg-yellow-500 rounded text-white text-sm hover:cursor-pointer"
-                  >
-                    <AiFillEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(i)}
-                    className="p-1 bg-red-500 rounded text-white text-sm hover:cursor-pointer"
-                  >
-                    <AiFillDelete />
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600 mb-6">No skills added.</p>
-      )}
-
+      {/* --- ADD NEW FORM --- */}
       {showAddBox ? (
-        <div className="mt-4 p-4 bg-white/50 rounded-2xl border shadow space-y-3">
-          <input
-            type="text"
-            className="w-full p-2 rounded-xl border"
-            placeholder="Category"
-            value={newEntry.category}
-            onChange={(e) =>
-              setNewEntry({ ...newEntry, category: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            className="w-full p-2 rounded-xl border"
-            placeholder="Skills (comma separated)"
-            value={newEntry.skills}
-            onChange={handleSkillChange}
-          />
-          <div className="flex gap-2">
+        <div className="mt-10 p-8 bg-gray-100 border border-gray-300 rounded-lg space-y-8 animate-slideDown shadow-inner">
+          <div className="flex justify-between items-center pb-4 border-b border-gray-300">
+            <h4 className="text-xs font-bold text-gray-900 uppercase tracking-widest">
+              Add New Skill Category
+            </h4>
+            <button onClick={() => setShowAddBox(false)}>
+              <AiOutlineClose className="text-gray-500 hover:text-black transition-colors" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8">
+            <MinimalInput
+              label="Category Name"
+              value={newEntry.category}
+              onChange={(e) =>
+                setNewEntry({ ...newEntry, category: e.target.value })
+              }
+              placeholder="Ex. Languages, Frameworks, Soft Skills"
+            />
+            <MinimalInput
+              label="Skills (comma separated)"
+              value={newEntry.skills}
+              onChange={handleSkillChange}
+              placeholder="Ex. English, Spanish, Leadership..."
+            />
+          </div>
+
+          <div className="pt-4">
             <button
               onClick={handleAddSave}
-              className="p-2 bg-blue-600 rounded text-white hover:cursor-pointer"
+              className="w-full md:w-auto px-10 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all duration-300 hover:shadow-lg transform active:scale-[0.98]"
             >
-              <AiOutlineCheck />
-            </button>
-            <button
-              onClick={() => setShowAddBox(false)}
-              className="p-2 bg-red-500 rounded text-white hover:cursor-pointer"
-            >
-              <AiOutlineClose />
+              Confirm Entry
             </button>
           </div>
         </div>
       ) : (
         <button
           onClick={() => setShowAddBox(true)}
-          className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl hover:cursor-pointer"
+          className="mt-8 w-full py-4 border-2 border-dashed border-gray-300 flex items-center justify-center gap-3 group hover:border-gray-900 hover:bg-gray-50 transition-all duration-300 rounded-lg"
         >
-          <AiOutlinePlusCircle />
+          <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <AiOutlinePlus size={14} />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-900 transition-colors">
+            Add Skill Category
+          </span>
         </button>
       )}
     </div>

@@ -1,194 +1,92 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import API_URL from "../api/authApi";
+import React from "react";
+import { X, LogOut, Mail, User, MapPin } from "lucide-react";
+import { useAuth } from "../context/authContext"; // Assuming you have this
+import { useNavigate } from "react-router-dom";
 
-export default function PortfolioPage() {
-  const { id } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const apiUrl = API_URL;
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const res = await axios.get(`${apiUrl}profile/${id}`);
-        setProfile(res.data);
-      } catch (err) {
-        console.error("Error loading profile:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProfile();
-  }, [id]);
+export default function UserProfileModal({ isOpen, onClose }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-2xl font-semibold text-indigo-200 animate-pulse">
-        Loading Portfolio...
-      </div>
-    );
+  if (!isOpen) return null;
 
-  if (!profile)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-2xl font-bold text-red-500">
-        Profile Not Found
-      </div>
-    );
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    onClose();
+  };
+
+  // Default fallback image if user has no photo
+  const defaultPhoto =
+    "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg";
 
   return (
-    <div className="min-h-screen p-6 md:p-10 bg-gradient-to-br from-[#0f172a] via-[#243b75] to-[#1b2a5a]">
-      <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-xl shadow-2xl rounded-3xl p-8 border border-white/20 space-y-8 animate-fadeIn">
-        {/* PROFILE HEADER */}
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <img
-            src={
-              profile.personal.photo ||
-              "https://www.shopfittingsstore.com.au/9262-medium_default/premium-male-mannequin-m22.jpg"
-            }
-            alt="Profile"
-            className="w-40 h-40 rounded-full border-4 border-white shadow-xl object-cover"
-          />
-          <div>
-            <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">
-              {profile.personal?.name}
-            </h1>
-            <p className="text-xl text-indigo-200">
-              {profile.personal?.designation}
-            </p>
-            <div className="mt-4 space-y-1 text-lg text-indigo-100">
-              <p>📧 {profile.personal?.email}</p>
-              <p>📍 {profile.personal?.location}</p>
-              <p>📞 {profile.personal?.phone}</p>
-            </div>
+    // 1. Overlay (Backdrop)
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity"
+      onClick={onClose} // Close when clicking outside
+    >
+      {/* 2. Modal Card */}
+      <div
+        className="relative w-full max-w-sm bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-6 transform transition-all scale-100 animate-fadeIn"
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Profile Content */}
+        <div className="flex flex-col items-center text-center mt-4">
+          {/* Photo with glowing ring */}
+          <div className="relative mb-4">
+            <div className="absolute inset-0 bg-blue-500 blur-lg opacity-40 rounded-full"></div>
+            <img
+              src={user?.photo || defaultPhoto}
+              alt="Profile"
+              className="relative w-24 h-24 rounded-full border-4 border-[#0f172a] object-cover shadow-lg"
+            />
           </div>
-        </div>
 
-        {/* SECTIONS WRAPPER */}
-        <div className="space-y-6">
-          {/* EDUCATION */}
-          {profile.education?.length > 0 && (
-            <Section title="🎓 Education">
-              {profile.education.map((edu, i) => (
-                <p key={i} className="text-white/90">
-                  {edu.degree} — {edu.institution} ({edu.startDate})
-                </p>
-              ))}
-            </Section>
-          )}
+          {/* Name & Role */}
+          <h2 className="text-2xl font-bold text-white">
+            {user?.name || "User Name"}
+          </h2>
+          <p className="text-blue-200 text-sm font-medium mb-6">
+            {user?.designation || "Member"}
+          </p>
 
-          {/* EXPERIENCE */}
-          {profile.experience?.length > 0 && (
-            <Section title="💼 Experience">
-              {profile.experience.map((exp, i) => (
-                <div key={i} className="mb-3">
-                  <h3 className="text-white font-semibold text-lg">
-                    {exp.position} — {exp.company}
-                  </h3>
-                  <p className="text-white/80">
-                    {exp.startDate} - {exp.isCurrent ? "Present" : exp.endDate}
-                  </p>
-                  <p className="text-white mt-1">{exp.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {exp.techUsed?.map((tech, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-white/20 text-white rounded-full border border-white/30 backdrop-blur-sm"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </Section>
-          )}
+          {/* Details Box */}
+          <div className="w-full bg-white/5 rounded-xl p-4 space-y-3 mb-6 border border-white/5">
+            <div className="flex items-center gap-3 text-gray-300">
+              <Mail size={18} className="text-blue-400" />
+              <span className="text-sm truncate">
+                {user?.email || "email@example.com"}
+              </span>
+            </div>
+            {user?.location && (
+              <div className="flex items-center gap-3 text-gray-300">
+                <MapPin size={18} className="text-blue-400" />
+                <span className="text-sm">{user.location}</span>
+              </div>
+            )}
+          </div>
 
-          {/* SKILLS */}
-          {profile.skills?.length > 0 && (
-            <Section title="🧩 Skills">
-              {profile.skills.map((cat, i) => (
-                <div key={i} className="mb-4">
-                  <p className="font-semibold text-white mb-2">
-                    {cat.category}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.skills?.map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 backdrop-blur-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </Section>
-          )}
-
-          {/* PROJECTS */}
-          {profile.projects?.length > 0 && (
-            <Section title="📁 Projects">
-              {profile.projects.map((proj, i) => (
-                <div key={i} className="mb-3">
-                  <h3 className="text-white font-semibold text-lg">
-                    {proj.projectName}
-                  </h3>
-                  <p className="text-white/80 mt-1">{proj.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {proj.techUsed?.map((t, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-white/20 text-white rounded-full border border-white/30"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </Section>
-          )}
-
-          {/* CERTIFICATIONS */}
-          {profile.certifications?.length > 0 && (
-            <Section title="🏅 Certifications">
-              {profile.certifications.map((cert, i) => (
-                <p key={i} className="text-white/90">
-                  {cert.certificationName} — {cert.issuer}
-                </p>
-              ))}
-            </Section>
-          )}
-
-          {/* CUSTOM SECTIONS */}
-          {profile.customSections?.length > 0 && (
-            <Section title="✨ Custom Sections">
-              {profile.customSections.map((sec, i) => (
-                <div key={i} className="mb-3">
-                  <h3 className="text-white font-semibold">{sec.name}</h3>
-                  <p className="text-white/80">
-                    {Array.isArray(sec.content)
-                      ? sec.content.join(", ")
-                      : sec.content}
-                  </p>
-                </div>
-              ))}
-            </Section>
-          )}
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full py-3 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-semibold rounded-xl transition-all duration-300 border border-red-500/20 group"
+          >
+            <LogOut
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
+            Sign Out
+          </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-/* REUSABLE SECTION COMPONENT */
-function Section({ title, children }) {
-  return (
-    <div className="p-6 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-2xl transition-all">
-      <h2 className="text-2xl font-bold text-white mb-3">{title}</h2>
-      <div className="space-y-2">{children}</div>
     </div>
   );
 }
