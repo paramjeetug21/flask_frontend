@@ -33,7 +33,6 @@ export default function ViewPortfolio() {
         setLoading(true);
         const response = await axios.get(`${API_URL}/profile/${id}`);
         // Based on your console log, the data is directly in response.data
-        console.log("Fetched profile data:", response.data);
         setProfile(response.data);
       } catch (err) {
         console.error("Error fetching profile:", err);

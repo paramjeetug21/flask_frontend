@@ -70,7 +70,11 @@ export default function PortfolioGallery() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
-
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
   const [currentUserId, setCurrentUserId] = useState(null);
   const showSuccess = true;
   const showWarning = false;
@@ -84,7 +88,6 @@ export default function PortfolioGallery() {
     try {
       const res = await axios.get(`${API_URL}/profile/user/${token}`);
       let data = res.data || [];
-      console.log("Fetched profiles:", data);
 
       // --- LOGIC CHANGE: SORT BY LATEST ---
       // Sorts by updatedAt (or createdAt) descending
@@ -128,23 +131,37 @@ export default function PortfolioGallery() {
 
   // --- HANDLER: DELETE PROFILE ---
   const handleDelete = async (e, profileId) => {
-    e.stopPropagation();
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this portfolio? This cannot be undone."
-      )
-    )
-      return;
+    // 1. Handle the event (works with the mock event from Child)
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    // --- REMOVED window.confirm (Child component handled it) ---
 
     try {
-      // Using the VITE_API_URL
       await axios.delete(`${API_URL}/profile/${profileId}`);
 
       // Remove from UI immediately
       setProfiles((prev) => prev.filter((p) => p._id !== profileId));
+
+      // Optional: Show "Success" popup
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Profile deleted successfully",
+      });
+      // Auto-hide after 3 seconds
+      setTimeout(
+        () => setNotification((prev) => ({ ...prev, show: false })),
+        3000
+      );
     } catch (error) {
       console.error("Error deleting profile:", error);
-      alert("Failed to delete profile");
+
+      // --- REPLACED ALERT WITH POPUP ---
+      setNotification({
+        show: true,
+        type: "warning",
+        message: "Failed to delete profile. Please try again.",
+      });
     }
   };
 
@@ -348,7 +365,7 @@ function CreateProfileModal({ token, onProfileCreated, onClose, initialData }) {
     if (initialData) {
       const p = initialData.personal || {};
       const s = initialData.socials || {};
-      console.log("user=", p);
+
       setName(p.name || "");
       setEmail(p.email || "");
       setDesignation(p.designation || "");
